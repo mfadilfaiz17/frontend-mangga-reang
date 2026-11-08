@@ -13,15 +13,14 @@ const formatTotal = (amount: number) =>
   }).format(amount);
 
 const VARIANTS = [
-  { label: "1kg", kg: 1 },
-  { label: "10kg", kg: 10 },
-  { label: "1ton", kg: 1000 },
-  { label: "2ton", kg: 2000 },
+  { label: "1 ton", tons: 1 },
+  { label: "5 ton", tons: 5 },
+  { label: "10 ton", tons: 10 },
+  { label: "20 ton", tons: 20 },
 ];
 
 const UNITS = [
-  { label: "Kg", kg: 1 },
-  { label: "Ton", kg: 1000 },
+  { label: "Ton", tons: 1 },
 ];
 
 export default function ProductActions({
@@ -31,25 +30,25 @@ export default function ProductActions({
 }) {
   const router = useRouter();
 
-  const [variant, setVariant] = useState<string | null>("1kg");
+  const [variant, setVariant] = useState<string | null>("1 ton");
   const [jumlah, setJumlah] = useState("");
-  const [satuan, setSatuan] = useState("Kg");
+  const [satuan, setSatuan] = useState("Ton");
   const [notice, setNotice] = useState("");
 
   const customQty = Number(jumlah) || 0;
-  const customKg =
-    customQty * (UNITS.find((u) => u.label === satuan)?.kg ?? 1);
+  const customTons =
+    customQty * (UNITS.find((u) => u.label === satuan)?.tons ?? 1);
 
-  const variantKg =
-    VARIANTS.find((v) => v.label === variant)?.kg ?? 0;
+  const variantTons =
+    VARIANTS.find((v) => v.label === variant)?.tons ?? 0;
 
   const usingCustom = customQty > 0;
-  const totalKg = usingCustom ? customKg : variantKg;
+  const totalTons = usingCustom ? customTons : variantTons;
   const label = usingCustom
     ? `${customQty} ${satuan}`
     : variant ?? "-";
 
-  const total = totalKg * product.price;
+  const total = totalTons * product.price;
 
   const pill = (active: boolean) =>
     `rounded-full px-3 py-0.5 text-[10px] font-bold shadow-sm transition focus-visible:outline-2 focus-visible:outline-black ${
@@ -63,12 +62,13 @@ export default function ProductActions({
   // =========================
 
   const handleCheckout = () => {
-    if (totalKg <= 0) return;
+    if (totalTons <= 0) return;
 
     const params = new URLSearchParams({
+      inventoryId: String(product.id ?? ""),
       name: product.name,
       price: String(product.price),
-      quantity: String(totalKg),
+      quantity: String(totalTons),
       label: label,
       supplier: product.supplier,
       address: product.address,
@@ -83,7 +83,7 @@ export default function ProductActions({
   // =========================
 
   const handleCart = () => {
-    if (totalKg <= 0) return;
+    if (totalTons <= 0) return;
 
     setNotice(`${label} ${product.name} masuk keranjang`);
   };
@@ -159,7 +159,7 @@ export default function ProductActions({
 
           <button
             type="button"
-            disabled={totalKg <= 0}
+            disabled={totalTons <= 0}
             onClick={handleCheckout}
             className="rounded-full bg-[#1EEB1E] px-3 py-1 text-sm font-black uppercase text-black shadow-md transition hover:scale-105 hover:brightness-95 disabled:opacity-50"
           >
@@ -168,7 +168,7 @@ export default function ProductActions({
 
           <button
             type="button"
-            disabled={totalKg <= 0}
+            disabled={totalTons <= 0}
             onClick={handleCart}
             className="rounded-full bg-[#FFF200] px-3 py-1 text-sm font-black uppercase text-black shadow-md transition hover:scale-105 hover:brightness-95 disabled:opacity-50"
           >

@@ -1,14 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { products, getProduct, formatRupiah } from "../products";
+import { fetchProducts, formatRupiah } from "../products";
 import ProductActions from "./ProductActions";
 
-type Params = Promise<{ slug: string }>;
+export const instant = false;
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
-}
+type Params = Promise<{ slug: string }>;
 
 export default async function ProductDetailPage({
   params,
@@ -16,7 +14,8 @@ export default async function ProductDetailPage({
   params: Params;
 }) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const products = await fetchProducts();
+  const product = products.find((item) => item.slug === slug);
   if (!product) notFound();
 
   // Produk lainnya: utamakan supplier lain dengan jenis sama, lalu lengkapi dengan lainnya

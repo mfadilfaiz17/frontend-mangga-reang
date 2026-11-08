@@ -9,6 +9,7 @@ import {
 
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import Link from "next/link";
 
 import {
   Cormorant_Garamond,
@@ -16,6 +17,7 @@ import {
 } from "next/font/google";
 
 import styles from "./Animation.module.css";
+import { loginUser } from "@/lib/api";
 
 /* =========================================
    FONT
@@ -281,8 +283,8 @@ export default function LoginModal({
   );
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -409,31 +411,40 @@ export default function LoginModal({
      LOGIN VALIDATION
   ========================================= */
 
-  function handleSubmit(
+  async function handleSubmit(
     e: React.FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
 
     const data = new FormData(e.currentTarget);
 
-    const username = String(
-      data.get("username") ?? ""
+    const email = String(
+      data.get("email") ?? ""
     ).trim();
 
     const password = String(
       data.get("password") ?? ""
     );
 
-    if (!username || !password) {
-      setError("Username dan password wajib diisi.");
+    if (!email || !password) {
+      setError("Email dan password wajib diisi.");
       return;
     }
 
+    setSubmitting(true);
     setError("");
-
-    // TODO:
-    // Sambungkan dengan API login backend.
-    // Jika login berhasil, panggil onClose().
+    try {
+      await loginUser(email, password);
+      onClose();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Login gagal. Coba lagi.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   /* =========================================
@@ -680,19 +691,19 @@ export default function LoginModal({
 
             <div className="relative">
               <label
-                htmlFor="login-username"
+                htmlFor="login-email"
                 className="sr-only"
               >
-                Username
+                Email
               </label>
 
               <input
                 ref={usernameRef}
-                id="login-username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                placeholder="Username"
+                id="login-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="Email"
                 className={`${inputClass} pr-16`}
               />
 
@@ -771,6 +782,7 @@ export default function LoginModal({
 
             <button
               type="submit"
+              disabled={submitting}
               className="
                 relative z-10
                 mx-auto
@@ -790,8 +802,21 @@ export default function LoginModal({
                 sm:h-14 sm:text-lg
               "
             >
-              Login
+              {submitting ? "Memproses..." : "Login"}
             </button>
+
+            <Link
+              href="/lupa-password"
+              onClick={onClose}
+              className="
+                relative z-10 mx-auto -mt-[2cqw]
+                text-center text-xs font-bold uppercase
+                tracking-[0.18em] text-[#8a4b00] underline
+                underline-offset-4 transition hover:text-black
+              "
+            >
+              Lupa password?
+            </Link>
 
             {/* ERROR MESSAGE */}
 
@@ -872,6 +897,12 @@ export function LoginTrigger({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const openLogin = () => setOpen(true);
+    window.addEventListener("auth:open-login", openLogin);
+    return () => window.removeEventListener("auth:open-login", openLogin);
+  }, []);
 
   return (
     <>

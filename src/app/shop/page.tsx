@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { products, formatRupiah } from "./products";
+import { fetchProducts, formatRupiah } from "./products";
+
+export const instant = false;
 
 const lokasiOptions = ["Indramayu", "Majalengka", "Cirebon", "Subang"];
 const jenisOptions = ["Harum Manis", "Manalagi", "Gedong Gincu", "Madu"];
@@ -17,7 +19,7 @@ export default async function ShopPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const params = await searchParams;
+  const [params, products] = await Promise.all([searchParams, fetchProducts()]);
   const q = toArray(params.q)[0]?.toLowerCase().trim() ?? "";
   const lokasi = toArray(params.lokasi);
   const jenis = toArray(params.jenis);

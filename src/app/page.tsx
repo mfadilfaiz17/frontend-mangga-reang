@@ -2,39 +2,12 @@ import Hero from "@/components/Hero";
 import ShopBeranda from "@/components/Shopberanda";
 import Contact from "@/components/Contact";
 import ScrollFx from "@/components/ScrollFx";
+import { fetchProducts } from "./shop/products";
 
-const products = [
-  {
-    name: "Mangga Harum Manis",
-    price: 20000,
-    supplier: "Supplier Mangga A",
-    address: "Indramayu, Jawa Barat",
-    image: "/images/mangga-harumanis.png",
-  },
-  {
-    name: "Mangga Manalagi",
-    price: 22000,
-    supplier: "Supplier Mangga B",
-    address: "Majalengka, Jawa Barat",
-    image: "/images/mangga-manalagi.png",
-  },
-  {
-    name: "Mangga Gedong Gincu",
-    price: 52000,
-    supplier: "Supplier Mangga C",
-    address: "Cirebon, Jawa Barat",
-    image: "/images/mangga-gedong.png",
-  },
-  {
-    name: "Mangga Madu",
-    price: 25000,
-    supplier: "Supplier Mangga D",
-    address: "Indramayu, Jawa Barat",
-    image: "/images/mangga-madu.png",
-  },
-];
+export const instant = false;
 
-export default function Home() {
+export default async function Home() {
+  const products = await fetchProducts();
   return (
     <main>
       <ScrollFx />

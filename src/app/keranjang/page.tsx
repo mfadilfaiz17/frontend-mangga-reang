@@ -1,43 +1,21 @@
-import Keranjang, { type CartItem } from "@/components/Keranjang";
-
-/* Data contoh. Ganti dengan data keranjang asli kalau sudah ada. */
-const items: CartItem[] = [
-  {
-    id: "harum-manis",
-    name: "Mangga Harum-Manis",
-    price: 20000,
-    supplier: "Supplier Mangga A",
-    address: "Indramayu, Jawa Barat",
-    image: "/images/mangga-harumanis.png",
-    qty: 10,
-    unit: "Kg",
-  },
-  {
-    id: "manalagi",
-    name: "Mangga Manalagi",
-    price: 22000,
-    supplier: "Supplier Mangga B",
-    address: "Majalengka, Jawa Barat",
-    image: "/images/mangga-manalagi.png",
-    qty: 5,
-    unit: "Kg",
-  },
-  {
-    id: "gedong-gincu",
-    name: "Mangga Gedong-Gincu",
-    price: 52000,
-    supplier: "Supplier Mangga C",
-    address: "Cirebon, Jawa Barat",
-    image: "/images/mangga-gedong.png",
-    qty: 3,
-    unit: "Kg",
-  },
-];
+import Link from "next/link";
 
 export default function KeranjangPage() {
   return (
-    <main>
-      <Keranjang initialItems={items} />
+    <main className="flex min-h-screen items-center justify-center bg-white px-6">
+      <section className="max-w-xl text-center">
+        <h1 className="text-4xl font-black uppercase">Keranjang B2B</h1>
+        <p className="mt-4 text-lg">
+          Keranjang retail tidak digunakan dalam alur platform ini. Pilih
+          inventaris dan ajukan RFQ berdasarkan tonase yang dibutuhkan.
+        </p>
+        <Link
+          href="/shop"
+          className="mt-8 inline-block rounded-full bg-[#1EEB1E] px-6 py-3 font-black uppercase text-black"
+        >
+          Buka katalog inventaris
+        </Link>
+      </section>
     </main>
   );
 }

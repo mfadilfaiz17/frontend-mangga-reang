@@ -1,12 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 import styles from "./Navbar.module.css";
 
 import { LoginTrigger } from "./loginModal";
 import { SignupTrigger } from "./signupModal";
+import { clearSession, getCurrentUser, type UserResponse } from "@/lib/api";
 
 /* =========================================
    SVG PROPERTIES
@@ -72,7 +75,7 @@ const navigation: {
   icon: ReactNode;
 }[] = [
   {
-    href: "/#notifikasi",
+    href: "/notifikasi",
     label: "Notifikasi",
     icon: BellIcon,
   },
@@ -87,6 +90,11 @@ const navigation: {
     icon: ShopIcon,
   },
   {
+    href: "/pesanan",
+    label: "Pesanan",
+    icon: CartIcon,
+  },
+  {
     href: "/#contact",
     label: "Contact",
     icon: PencilIcon,
@@ -98,6 +106,40 @@ const navigation: {
 ========================================= */
 
 export default function Navbar() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserResponse | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadUser = async () => {
+      const token = window.localStorage.getItem("accessToken");
+      if (!token) {
+        if (active) setUser(null);
+        return;
+      }
+
+      try {
+        const currentUser = await getCurrentUser();
+        if (active) setUser(currentUser);
+      } catch {
+        clearSession();
+      }
+    };
+
+    void loadUser();
+    window.addEventListener("auth:changed", loadUser);
+    return () => {
+      active = false;
+      window.removeEventListener("auth:changed", loadUser);
+    };
+  }, []);
+
+  function handleLogout() {
+    clearSession();
+    router.replace("/");
+  }
+
   return (
     <header className={styles.header}>
 
@@ -142,26 +184,34 @@ export default function Navbar() {
       <div className={styles.accountArea}>
         {/* LOGIN & SIGN UP */}
 
-        <div className={styles.accountLinks}>
-          {/* LOGIN */}
-
-          <LoginTrigger className={styles.loginLink}>
-            LOGIN
-          </LoginTrigger>
-
-          <span
-            className={styles.divider}
-            aria-hidden="true"
-          >
-            |
-          </span>
-
-          {/* SIGN UP */}
-
-          <SignupTrigger className={styles.signupLink}>
-            SIGN UP
-          </SignupTrigger>
-        </div>
+        {user ? (
+          <div className={styles.accountLinks}>
+            <span className={styles.loginLink}>
+              {user.namaLengkap} ({user.role})
+            </span>
+            <Link className={styles.signupLink} href="/profil">
+              PROFIL
+            </Link>
+            {user.role !== "BUYER_B2B" && (
+              <Link className={styles.signupLink} href="/dashboard">
+                DASHBOARD
+              </Link>
+            )}
+            <button
+              type="button"
+              className={styles.signupLink}
+              onClick={handleLogout}
+            >
+              LOGOUT
+            </button>
+          </div>
+        ) : (
+          <div className={styles.accountLinks}>
+            <LoginTrigger className={styles.loginLink}>LOGIN</LoginTrigger>
+            <span className={styles.divider} aria-hidden="true">|</span>
+            <SignupTrigger className={styles.signupLink}>SIGN UP</SignupTrigger>
+          </div>
+        )}
 
         {/* SHOPPING CART */}
 

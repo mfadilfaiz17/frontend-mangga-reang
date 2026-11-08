@@ -1,12 +1,15 @@
 
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import styles from "./checkout.module.css";
+import { createRfq } from "@/lib/api";
+import { addNotification } from "@/lib/notifications";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const params = useSearchParams();
+  const inventoryId = Number(params.get("inventoryId"));
 
   // DATA PRODUK DARI HALAMAN DETAIL
   const name = params.get("name") || "Produk Mangga";
@@ -14,16 +17,14 @@ export default function CheckoutPage() {
   const supplier = params.get("supplier") || "-";
   const supplierAddress = params.get("address") || "-";
   const image = params.get("image") || "/images/manggaHarumManis.png";
-  const label = params.get("label") || "1kg";
 
   const [quantity, setQuantity] = useState(
     Number(params.get("quantity")) || 1
   );
 
-  const [customerName, setCustomerName] = useState("");
-  const [address, setAddress] = useState("");
-  const [editingAddress, setEditingAddress] = useState(false);
-  const [payment, setPayment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const total = quantity * price;
 
@@ -34,25 +35,31 @@ export default function CheckoutPage() {
       maximumFractionDigits: 0,
     }).format(value);
 
-  const handleCheckout = () => {
-    if (!customerName.trim()) {
-      alert("Masukkan nama konsumen!");
+  const handleCheckout = async () => {
+    if (!inventoryId) {
+      setError("Produk belum memiliki ID inventaris dari backend.");
       return;
     }
 
-    if (!address.trim()) {
-      alert("Masukkan alamat pengantaran!");
-      return;
+    setSubmitting(true);
+    setError("");
+    setSuccess("");
+    try {
+      const rfq = await createRfq(inventoryId, quantity);
+      addNotification({
+        title: "RFQ berhasil diajukan",
+        message: `RFQ #${rfq.id} berhasil dibuat dan menunggu verifikasi admin gudang.`,
+      });
+      setSuccess(`RFQ #${rfq.id} berhasil dibuat dengan status ${rfq.statusNego}.`);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Checkout gagal. Silakan coba lagi.",
+      );
+    } finally {
+      setSubmitting(false);
     }
-
-    if (!payment) {
-      alert("Pilih metode pembayaran!");
-      return;
-    }
-
-    alert(
-      `Pesanan berhasil dibuat!\n\nProduk: ${name}\nSupplier: ${supplier}\nJumlah: ${quantity} Kg\nTotal: ${formatRupiah(total)}\nPembayaran: ${payment}`
-    );
   };
 
   return (
@@ -108,7 +115,7 @@ export default function CheckoutPage() {
             <h2>{name}</h2>
 
             <p className={styles.productPrice}>
-              {formatRupiah(price)}/Kg
+              {formatRupiah(price)} / Ton
             </p>
 
             <p className={styles.supplier}>
@@ -148,7 +155,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className={styles.unit}>
-            Kg
+            Ton
           </div>
 
           <div className={styles.itemTotal}>
@@ -156,84 +163,33 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* ADDRESS */}
-        <section className={styles.addressSection}>
-          <h3>ALAMAT PENGANTARAN</h3>
-
-          <div className={styles.addressRow}>
-            <label>NAMA KONSUMEN</label>
-
-            <input
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className={styles.customerInput}
-              placeholder="MASUKKAN NAMA KONSUMEN"
-            />
-          </div>
-
-          <div className={styles.addressRow}>
-            <label>ALAMAT KONSUMEN</label>
-
-            {editingAddress ? (
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className={styles.addressInput}
-                placeholder="MASUKKAN ALAMAT LENGKAP"
-                autoFocus
-              />
-            ) : (
-              <div className={styles.addressDisplay}>
-                {address || "ALAMAT KONSUMEN"}
-              </div>
-            )}
-
-            <button
-              className={styles.editAddressButton}
-              onClick={() => setEditingAddress(!editingAddress)}
-            >
-              {editingAddress ? "SIMPAN" : "UBAH ALAMAT"}
-            </button>
-          </div>
-        </section>
-
-        {/* PAYMENT */}
-        <section className={styles.paymentSection}>
-          <h3>METODE PEMBAYARAN</h3>
-
-          <div className={styles.paymentOptions}>
-            {["TRANSFER", "COD", "QRIS", "E-WALLET"].map((method) => (
-              <button
-                key={method}
-                onClick={() => setPayment(method)}
-                className={`${styles.paymentButton} ${
-                  payment === method ? styles.paymentActive : ""
-                }`}
-              >
-                {method}
-              </button>
-            ))}
-          </div>
-        </section>
-
         {/* TOTAL */}
         <div className={styles.totalSection}>
           <div className={styles.totalInformation}>
-            <span>TOTAL PEMBAYARAN</span>
+            <span>ESTIMASI NILAI RFQ</span>
             <strong>{formatRupiah(total)}</strong>
           </div>
 
           <button
             className={styles.checkoutButton}
             onClick={handleCheckout}
+            disabled={submitting}
           >
-            CHECKOUT
+            {submitting ? "MEMPROSES..." : "AJUKAN RFQ"}
           </button>
+          {error && <p role="alert">{error}</p>}
+          {success && <p role="status">{success}</p>}
         </div>
 
       </section>
     </main>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<main className={styles.checkoutPage}>Memuat checkout...</main>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

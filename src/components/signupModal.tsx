@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 
 import styles from "./SignupAnimation.module.css";
+import { ApiError, registerUser, type Role } from "@/lib/api";
 
 /* =========================================
    FONT & ASSET
@@ -117,6 +118,8 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -124,6 +127,7 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     phone: "",
     password: "",
     confirmPassword: "",
+    role: "BUYER_B2B" as Exclude<Role, "ADMIN_GUDANG">,
   });
 
   const usernameRef = useRef<HTMLInputElement>(null);
@@ -168,16 +172,17 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
     setError("");
+    setSuccess("");
   };
 
   /* FORM VALIDATION */
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const { username, email, phone, password, confirmPassword } = formData;
+    const { username, email, password, confirmPassword, role } = formData;
 
-    if (!username.trim() || !email.trim() || !phone.trim() || !password || !confirmPassword) {
-      setError("Semua kolom wajib diisi.");
+    if (!username.trim() || !email.trim() || !password || !confirmPassword) {
+      setError("Nama, email, dan password wajib diisi.");
       return;
     }
 
@@ -198,7 +203,39 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
       return;
     }
 
-    setError("Form berhasil divalidasi. Integrasikan proses registrasi dengan API.");
+    setSubmitting(true);
+    setError("");
+    setSuccess("");
+    try {
+      await registerUser({
+        email,
+        password,
+        namaLengkap: username,
+        role,
+      });
+      setError("");
+      setSuccess("Registrasi berhasil. Silakan login.");
+      window.setTimeout(() => {
+        onClose();
+        window.dispatchEvent(new Event("auth:open-login"));
+      }, 800);
+    } catch (requestError) {
+      if (requestError instanceof ApiError && requestError.status === 409) {
+        setError("Email sudah terdaftar. Silakan login dengan email tersebut.");
+        window.setTimeout(() => {
+          onClose();
+          window.dispatchEvent(new Event("auth:open-login"));
+        }, 1200);
+        return;
+      }
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Registrasi gagal. Coba lagi.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   /* CLOSE WHEN CLICK BACKDROP */
@@ -390,11 +427,30 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                     />
                   </div>
 
+                  <div>
+                    <label htmlFor="signup-role" className="sr-only">Jenis akun</label>
+                    <select
+                      id="signup-role"
+                      name="role"
+                      value={formData.role}
+                      onChange={(event) =>
+                        setFormData((previous) => ({
+                          ...previous,
+                          role: event.target.value as Exclude<Role, "ADMIN_GUDANG">,
+                        }))
+                      }
+                      className={`${inputClass} appearance-none`}
+                    >
+                      <option value="BUYER_B2B">Buyer B2B</option>
+                      <option value="PETANI">Petani</option>
+                    </select>
+                  </div>
+
                   <button
                     type="submit"
                     className="h-12 w-full rounded-xl bg-[#FFFDF8] px-5 text-left text-xs font-semibold uppercase tracking-[0.35em] text-[#E08A00] shadow-[0_8px_16px_rgba(120,60,0,0.25),inset_0_-2px_4px_rgba(255,165,0,0.25)] transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/80 sm:text-sm"
                   >
-                    Register
+                    {submitting ? "Memproses..." : "Register"}
                   </button>
                 </div>
               </div>
@@ -405,6 +461,14 @@ export default function SignupModal({ open, onClose }: SignupModalProps) {
                   className="mt-5 text-center text-xs font-semibold tracking-wide text-[#7a2e00] sm:text-sm"
                 >
                   {error}
+                </p>
+              )}
+              {success && (
+                <p
+                  role="status"
+                  className="mt-5 text-center text-xs font-semibold tracking-wide text-green-800 sm:text-sm"
+                >
+                  {success}
                 </p>
               )}
             </form>
