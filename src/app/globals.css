@@ -36,3 +36,153 @@ input {
   color: #17120b;
 }
 
+
+/* ===== Responsive v2: navbar & overflow ===== */
+html, body { overflow-x: clip; }
+
+.nb-username {
+  font-size: clamp(0.875rem, 4vw, 1.875rem) !important;
+  letter-spacing: 0.04em !important;
+}
+
+@media (max-width: 700px) {
+  .nb-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .nb-nav {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-around !important;
+    gap: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 4px 4px !important;
+    box-sizing: border-box !important;
+  }
+  .nb-link {
+    font-size: 11px !important;
+    gap: 3px !important;
+    padding: 6px 4px !important;
+    white-space: nowrap !important;
+    min-width: 0 !important;
+  }
+  .nb-account {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 6px 12px !important;
+    box-sizing: border-box !important;
+  }
+  .nb-account > div:first-child { min-width: 0; flex: 1 1 auto; }
+  .nb-account button { max-width: 100%; }
+  .nb-cart {
+    flex: 0 0 auto !important;
+    font-size: 12px !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ===== Responsive v3: hero & alur (mobile) ===== */
+.nb-root { overflow-x: clip; }
+
+@media (max-width: 700px) {
+  .nb-username { max-width: 34vw !important; }
+
+  /* ---------- HERO: susun vertikal ---------- */
+  .hx-hero {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    padding: 28px 16px 24px !important;
+    overflow: hidden !important;
+    max-width: 100vw !important;
+  }
+  .hx-sky { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; z-index: 0 !important; }
+  .hx-landmark {
+    position: absolute !important; top: 0 !important; left: 50% !important;
+    transform: translateX(-50%) !important; width: 75vw !important; max-width: 320px !important;
+    height: auto !important; opacity: 0.22 !important; z-index: 0 !important;
+  }
+  .hx-deco, .hx-orange { display: none !important; }
+
+  .hx-welcome {
+    position: relative !important; inset: auto !important; transform: none !important;
+    margin: 0 !important; width: 100% !important; text-align: center !important; z-index: 2 !important;
+  }
+  .hx-welcome p  { font-size: 14px !important; letter-spacing: 0.15em !important; margin: 0 !important; }
+  .hx-welcome h1 { font-size: clamp(1.4rem, 7.5vw, 2rem) !important; line-height: 1.15 !important; margin: 4px 0 0 !important; }
+
+  .hx-panel {
+    position: relative !important; inset: auto !important; transform: none !important;
+    animation: none !important; opacity: 1 !important;
+    width: 100% !important; max-width: 440px !important; height: auto !important;
+    padding: 22px 20px 24px !important; margin: 0 !important;
+    border-radius: 20px !important; z-index: 2 !important; overflow: visible !important;
+  }
+  .hx-panel > * {
+    position: static !important; inset: auto !important; transform: none !important;
+    animation: none !important; opacity: 1 !important;
+    width: auto !important; max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important;
+  }
+  .hx-panel > p:first-child { font-size: clamp(1.1rem, 6vw, 1.6rem) !important; margin: 0 !important; line-height: 1.1 !important; }
+  .hx-panel > h2 { font-size: clamp(3rem, 17vw, 4.5rem) !important; line-height: 1 !important; letter-spacing: 0.08em !important; margin: 2px 0 8px !important; }
+  .hx-panel > div[aria-hidden="true"] { height: 6px !important; width: 100% !important; margin: 0 0 14px !important; }
+  .hx-panel > p:not(:first-child) { font-size: 13px !important; line-height: 1.5 !important; margin: 0 0 16px !important; }
+  .hx-panel > a {
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    min-height: 44px !important; padding: 10px 22px !important; white-space: nowrap !important;
+  }
+
+  .hx-mango {
+    position: relative !important; inset: auto !important; transform: none !important; animation: none !important;
+    width: min(78vw, 340px) !important; height: auto !important; margin: -6px auto 0 !important; z-index: 1 !important;
+  }
+  .hx-bottom {
+    position: relative !important; inset: auto !important; transform: none !important;
+    width: 100% !important; height: auto !important; padding: 8px 4px 0 !important; z-index: 2 !important;
+  }
+  .hx-bottom p { font-size: 10px !important; letter-spacing: 0.12em !important; line-height: 1.6 !important; text-align: center !important; animation: none !important; opacity: 1 !important; }
+
+  /* ---------- ALUR: ukuran vw -> ukuran nyata ---------- */
+  .hx-alur { min-height: 0 !important; overflow: hidden !important; }
+  .hx-alur-inner { padding: 20px 16px 32px !important; }
+  .hx-alur-mango {
+    position: relative !important; display: block !important;
+    width: min(55vw, 230px) !important; max-width: 230px !important;
+    margin: 0 0 -48px auto !important; right: auto !important; top: auto !important;
+  }
+  .hx-alur-row { flex-wrap: nowrap !important; align-items: center !important; gap: 10px !important; }
+  .hx-alur-logo { width: 52% !important; }
+  .hx-alur-div { width: 2px !important; height: 56px !important; margin: 0 !important; }
+  .hx-alur-title { font-size: clamp(2.6rem, 17vw, 4.5rem) !important; }
+  .hx-alur-sub { width: 100% !important; margin-top: 14px !important; font-size: 10px !important; letter-spacing: 0.1em !important; line-height: 1.5 !important; }
+  .hx-alur-ask { font-size: clamp(1.4rem, 7.5vw, 2.2rem) !important; letter-spacing: 0.04em !important; margin-top: 16px !important; }
+  .hx-alur-card {
+    width: 100% !important; margin-top: 14px !important; border-radius: 22px !important;
+    padding: 20px 16px 24px !important;
+  }
+  .hx-alur-list { font-size: 13px !important; line-height: 1.6 !important; letter-spacing: 0.04em !important; }
+  .hx-alur-item { margin-bottom: 10px !important; }
+}

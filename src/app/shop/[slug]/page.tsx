@@ -4,8 +4,6 @@ import { notFound } from "next/navigation";
 import { fetchProducts, formatRupiah } from "../products";
 import ProductActions from "./ProductActions";
 
-export const instant = false;
-
 type Params = Promise<{ slug: string }>;
 
 export default async function ProductDetailPage({
@@ -14,11 +12,15 @@ export default async function ProductDetailPage({
   params: Params;
 }) {
   const { slug } = await params;
+  
+  // Menarik data dari API Backend
   const products = await fetchProducts();
   const product = products.find((item) => item.slug === slug);
+  
+  // Jika URL tidak cocok dengan slug mana pun di database, arahkan ke halaman 404 (not-found.tsx)
   if (!product) notFound();
 
-  // Produk lainnya: utamakan supplier lain dengan jenis sama, lalu lengkapi dengan lainnya
+  // Logika Rekomendasi Produk Lainnya (Maksimal 4 produk)
   const others = products.filter((p) => p.slug !== product.slug);
   const sameType = others.filter((p) => p.name === product.name);
   const related = [...sameType, ...others.filter((p) => p.name !== product.name)].slice(0, 4);
@@ -26,13 +28,14 @@ export default async function ProductDetailPage({
   return (
     <main className="min-h-screen overflow-hidden bg-white">
       <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-8">
+        
         {/* ===== Header ===== */}
         <header className="relative flex min-h-48 items-center gap-4 pt-10 sm:gap-8 sm:pt-14 lg:pr-64">
           <Link href="/shop" aria-label="Kembali ke Shop" className="w-fit shrink-0">
-            <p className="font-serif text-2xl uppercase tracking-wider text-black sm:text-4xl lg:text-5xl">
+            <p className="font-serif text-2xl uppercase tracking-wider text-black sm:text-4xl lg:text-5xl transition hover:opacity-70">
               Juragan Mangga
             </p>
-            <p className="mt-1 flex justify-between text-4xl font-black leading-none text-[#FFA800] sm:text-6xl lg:text-7xl">
+            <p className="mt-1 flex justify-between text-4xl font-black leading-none text-[#FFA800] sm:text-6xl lg:text-7xl transition hover:opacity-70">
               {"REANG".split("").map((c, i) => (
                 <span key={i}>{c}</span>
               ))}
@@ -69,7 +72,7 @@ export default async function ProductDetailPage({
             <input
               type="search"
               name="q"
-              placeholder="EKSPLORE RASA MANGGA DI BERBAGAI DAERAH"
+              placeholder="CARI STOK MANGGA B2B TERBAIK"
               aria-label="Cari mangga"
               className="min-w-0 flex-1 bg-transparent text-sm uppercase tracking-wide text-stone-700 outline-none placeholder:text-stone-400"
             />
@@ -83,9 +86,10 @@ export default async function ProductDetailPage({
         <div className="-mt-7 rounded-t-[3rem] bg-[#FFA800] px-4 pb-10 pt-12 shadow-[0_0_60px_rgba(255,168,0,0.6)] sm:px-7">
           <div className="flex gap-3">
             <div className="min-w-0 flex-1 lg:pr-6">
+              
               {/* ----- Kartu detail utama ----- */}
               <article className="flex flex-col items-center gap-5 rounded-[2.5rem] border-[3px] border-[#D48A00] bg-[#FFA800] p-4 shadow-[inset_0_-4px_10px_rgba(0,0,0,0.15)] sm:flex-row sm:gap-10 sm:p-8">
-                <div className="relative aspect-square w-full max-w-56 shrink-0 overflow-hidden rounded-4xl bg-white">
+                <div className="relative aspect-square w-full max-w-56 shrink-0 overflow-hidden rounded-4xl bg-white shadow-inner">
                   <Image
                     src={product.image}
                     alt={product.name}
@@ -94,6 +98,10 @@ export default async function ProductDetailPage({
                     sizes="224px"
                     className="object-contain p-3"
                   />
+                  {/* Badge Label Stok yang tersisa di Gudang */}
+                  <div className="absolute top-3 left-3 bg-black text-white text-xs font-bold px-3 py-1 rounded-full z-10 shadow-md">
+                    Sisa Stok: {product.stockTons} Ton
+                  </div>
                 </div>
 
                 <div className="min-w-0 text-center sm:text-left">
@@ -104,15 +112,15 @@ export default async function ProductDetailPage({
                     {formatRupiah(product.price)}
                   </p>
                   <p className="mt-3 text-lg font-medium uppercase leading-tight tracking-wider text-white sm:text-3xl">
-                    {product.supplier}
+                    Grade: {product.grade.replace("GRADE_", "")}
                   </p>
-                  <p className="text-lg font-medium uppercase leading-tight tracking-wider text-white sm:text-3xl">
-                    {product.address}
+                  <p className="mt-1 text-base font-bold uppercase leading-tight tracking-wider text-black/70 sm:text-xl">
+                    {product.supplier} | {product.address}
                   </p>
                 </div>
               </article>
 
-              {/* ----- Varian, custom, checkout ----- */}
+              {/* ----- Varian, custom, checkout (Memanggil ProductActions.tsx B2B) ----- */}
               <div className="mt-6 px-2 sm:px-6">
                 <ProductActions product={product} />
               </div>
@@ -129,7 +137,7 @@ export default async function ProductDetailPage({
                 </div>
                 <Link
                   href={`/shop?q=${encodeURIComponent(product.supplier)}`}
-                  className="flex items-center px-5 text-sm font-black uppercase tracking-widest text-black hover:underline sm:px-8"
+                  className="flex items-center px-5 text-sm font-black uppercase tracking-widest text-black transition hover:opacity-70 sm:px-8"
                 >
                   Kunjungi
                 </Link>
@@ -137,7 +145,7 @@ export default async function ProductDetailPage({
 
               {/* ----- Produk lainnya ----- */}
               <h2 className="mt-5 flex items-center gap-2 px-2 text-xl font-black uppercase tracking-wide text-black sm:ml-6 sm:text-2xl">
-                Produk Lainnya
+                Rekomendasi Grosir Lainnya
                 <span aria-hidden="true">↓</span>
               </h2>
 
@@ -146,7 +154,7 @@ export default async function ProductDetailPage({
                   <li key={p.slug}>
                     <Link
                       href={`/shop/${p.slug}`}
-                      className="group block rounded-t-[3rem] rounded-b-2xl border-[6px] border-[#D48A00] bg-white p-1 transition hover:-translate-y-1"
+                      className="group block rounded-t-[3rem] rounded-b-2xl border-[6px] border-[#D48A00] bg-white p-1 transition hover:-translate-y-1 hover:shadow-lg"
                     >
                       <div className="relative aspect-square overflow-hidden rounded-t-[2.4rem]">
                         <Image
@@ -157,9 +165,9 @@ export default async function ProductDetailPage({
                           className="object-contain p-2"
                         />
                       </div>
-                      <div className="px-2 pb-2 pt-1">
-                        <p className="text-[10px] font-black uppercase text-black">{p.name}</p>
-                        <p className="font-mono text-sm font-black text-[#D48A00]">
+                      <div className="px-2 pb-2 pt-1 text-center">
+                        <p className="text-[10px] font-black uppercase text-black line-clamp-1">{p.name}</p>
+                        <p className="font-mono text-xs font-black text-[#D48A00] mt-0.5">
                           {formatRupiah(p.price)}
                         </p>
                       </div>

@@ -25,7 +25,7 @@ export function inventoryToProduct(item: Inventory): Product {
     slug: `inventory-${item.id}`,
     name: `Mangga ${name}`,
     price: Number(item.hargaPerTon),
-    supplier: `Petani #${item.idPetani}`,
+    supplier: `Petani #${item.idPetani}`, // Nanti bisa dijoin dengan tabel user
     address: item.lokasiKebun,
     image: imageForVariety[item.varietas] ?? "/images/manggaHarumManis.png",
     grade: item.grade,
@@ -33,10 +33,12 @@ export function inventoryToProduct(item: Inventory): Product {
   };
 }
 
+// Fungsi utama penarik data dari Backend
 export async function fetchProducts(): Promise<Product[]> {
   const inventory = await getInventory();
   return inventory.map(inventoryToProduct);
 }
 
+// Sesuaikan menjadi /Ton untuk target B2B
 export const formatRupiah = (n: number) =>
   "Rp." + n.toLocaleString("id-ID") + "/Ton";
