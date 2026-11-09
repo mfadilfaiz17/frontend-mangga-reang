@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchProducts, formatRupiah } from "../products";
 import ProductActions from "./ProductActions";
+// 1. TAMBAHKAN IMPORT INI
+import { headers } from "next/headers"; 
 
 type Params = Promise<{ slug: string }>;
 
@@ -11,6 +13,10 @@ export default async function ProductDetailPage({
 }: {
   params: Params;
 }) {
+  // 2. TAMBAHKAN BARIS INI
+  // Memaksa halaman menjadi dinamis (SSR) agar tidak error saat Vercel build
+  await headers(); 
+
   const { slug } = await params;
   
   // Menarik data dari API Backend
